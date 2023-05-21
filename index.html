@@ -1,103 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Piracy Detector</title>
-<script type="text/javascript">
-    function run() {
-        let htmlCode = document.querySelector(".editor #html-code").value;
-        let output = document.getElementById("output");
-        //console.log(htmlCode, cssCode, jsCode, output);
-        output.contentDocument.body.innerHTML = htmlCode;
-        jsCode = document.getElementById("html-code").value;
-        jsCode = jsCode.replace(/script/g, "obvious")
-        jsCode = jsCode.replace(/\n/g, " ")
-        jsCode = jsCode.split(" ")
-        console.log(jsCode)
-        if ((jsCode.includes("<obvious>") == true) || (jsCode.includes("<obvious") == true)) {
-            firstIndex = jsCode.indexOf("<obvious>")
-                if (firstIndex == undefined) {firstIndex = jsCode.indexOf("<obvious")}
-            secondIndex = jsCode.indexOf("</obvious>")
-            console.log(firstIndex, secondIndex)
-            splicedJavascript = jsCode.slice(firstIndex + 1, secondIndex)
-            splicedJavascript = splicedJavascript.join(" ")
-        }
-        output.contentWindow.eval(splicedJavascript);
-    }
-</script>
-</head>
-<body>
-    
-    <ul>
-        <li><a href="#home">Home</a></li>
-        <li><a href="#news">News</a></li>
-        <li><a href="#run" onclick="run()">Run</a></li>
-        <li><a href="#about">About</a></li>
-    </ul>
-
-    <div class="editor">
-        <label id="html-label">HTML</label>
-        <div class="line-numbers">
-            <span></span>
-        </div>
-        <textarea id="html-code"></textarea>
-        <iframe id="output"></iframe>
-    </div>
-    
+    <script src="https://www.gstatic.com/firebasejs/7.6.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.2/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/live/3.1/firebase.js"></script> 
+    <title>Document</title>
     <style>
         body {
-            margin: 0;
+            background-color: rgb(143, 205, 252);
+            text-align: center;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
         }
-        label {font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif; height: 7vh; padding-top: 2.5vh; z-index: 1;}
-        #html-label {margin: 0.5vmin 0 0 0; width: 20vmin; height: 10vmin; position: absolute; text-align: center; background-color: rgb(224, 121, 48); font-size: xx-large; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;}
-        
-        #html-code {
+        div {
+            background-color: #2d6f84;
+            border-radius: 5%;
+            margin: auto;
+            width: fit-content;
+            padding: 1vw 2vw 1vw 2vw;
             color: white;
-            background-color: #111;
-            font-family:'Courier New', Courier, monospace;
-            font-weight: bold;
-            resize: none;
-            width: 65vw;
-            height: 85vh;
-            outline: none;
-            border: none;
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            z-index: 2;
-            font-size: 20px;
         }
-        iframe {
-            width: 30vw;
-            height: 85vh;
-            padding: 0;
-            bottom: 0;
-            right: 0;
-            position: absolute;
-        }
-        textarea:focus-visible {border: none;}
-        ul {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        border: 1px solid #e7e7e7;
-        background-color: #b3adad;
-        height: 5vh;
-        }
-        li {
-        float: left;
-        }
+        #loginButton {cursor: pointer;color: white; background-color: rgb(41, 138, 41); border: none; width: 5vw; height: 3vh; font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif; font-size: large; border-radius: 100vw;}
 
-        li a {
-        display: block;
-        color: #666;
-        text-align: center;
-        padding: 14px 16px;
-        text-decoration: none;
-        }
-
-    
+        #loom-companion-mv3 {display: none;}
     </style>
-    
+</head>
+<body>
+    <h1>Piracy Detector</h1>
+    <br>
+    <br>
+    <div>
+        <h4>Login</h4>
+        <input type="text" id="username" placeholder="Username">
+        <br>
+        <br>
+        <input type="password" id="password" placeholder="Password">
+        <br>
+        <br>
+        <br>
+        <br>
+        <button id="loginButton" onclick="login()">Login</button>
+    </div>
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyBQm9m0E3WeAqlrLVc2pmua1YeV7mipLLI",
+            authDomain: "piracy-detector.firebaseapp.com",
+            databaseURL: "https://piracy-detector-default-rtdb.firebaseio.com",
+            projectId: "piracy-detector",
+            storageBucket: "piracy-detector.appspot.com",
+            messagingSenderId: "612268601419",
+            appId: "1:612268601419:web:fcd4122d924b2fdb431dce"
+        };
+        firebase.initializeApp(firebaseConfig);
+        function login() {
+            username = document.getElementById("username").value;
+            password = document.getElementById("password").value;
+            firebase.database().ref(username).push({
+                name: username,
+                password: password,
+            });
+            if ((username == "Piracy_Detector") && (password == "Passw@rd")) {
+                window.location = "index copy.html"
+            }
+            else {
+                alert("Username and Password is wrong")
+            }
+        }
+        firebase.database().ref("/" + username).on('value', function (snapshot) {
+            document.getElementById("output").innerHTML = "";
+            snapshot.forEach(function (childSnapshot) {
+                  childKey = childSnapshot.key;
+                  childData = childSnapshot.val();
+                  if (childKey != "purpose") {
+                        firebase_message_id = childKey;
+                        message_data = childData;
+                        //Start code
+
+                        //End code
+                  }
+            });
+      });
+    </script>
 </body>
 </html>
